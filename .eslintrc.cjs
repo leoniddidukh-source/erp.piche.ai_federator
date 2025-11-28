@@ -1,0 +1,35 @@
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:prettier/recommended',
+  ],
+  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['react', 'simple-import-sort', 'import', 'promise', 'react-refresh', 'prettier'],
+  rules: {
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
+    'import/newline-after-import': 'error',
+    'import/no-duplicates': 'error',
+    'import/first': 'error',
+    'complexity': ['warn', 7],
+    'no-nested-ternary': 'error',
+    'eol-last': ['error', 'always'],
+    'newline-before-return': 'error',
+    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    'react/jsx-curly-brace-presence': 'error',
+  },
+};

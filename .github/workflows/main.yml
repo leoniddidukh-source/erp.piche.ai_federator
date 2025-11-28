@@ -1,0 +1,33 @@
+name: piche.wc.react-app-template
+on:
+  push:
+    branches:
+      - master
+
+env:
+  MAJOR: '1'
+  MINOR: '1'
+  PATCH: ${{ github.run_number }}
+  NPM_USER: ${{ secrets.NPM_USER }}
+  NPM_PWD: ${{ secrets.NPM_PASSWORD }}
+  NPM_REGISTRY: ${{ secrets.NPM_REGISTRY }}
+  NPM_EMAIL: ${{ secrets.NPM_EMAIL }}
+
+jobs:
+  echo_message:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Message
+        run: echo "Jobs and steps block should be replaced with outcommented jobs and steps part"
+# jobs:
+#   build-and-push:
+#     name: Build and Push Docker Image
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
+#       - name: Build the Docker image
+#         run: |
+#           docker build . --file ./Dockerfile --build-arg="BUILD_VERSION=$MAJOR.$MINOR.$PATCH" --build-arg="NPM_USER=$NPM_USER" --build-arg="NPM_PWD=$NPM_PWD" --build-arg="NPM_REGISTRY=$NPM_REGISTRY" --build-arg="NPM_EMAIL=$NPM_EMAIL"
