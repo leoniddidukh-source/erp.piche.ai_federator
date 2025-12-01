@@ -57,7 +57,7 @@ export const ChatWindow: FC<ChatWindowProps> = ({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -92,13 +92,6 @@ export const ChatWindow: FC<ChatWindowProps> = ({
     await onSendMessage(messageText);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   const handleEmojiSelect = (emoji: string) => {
     setInput(prev => `${prev}${emoji}`);
     setIsEmojiPickerOpen(false);
@@ -108,73 +101,25 @@ export const ChatWindow: FC<ChatWindowProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'white' }}>
-      {/* Chat Header */}
-      <div
-        style={{
-          padding: '12px 20px',
-          borderBottom: '1px solid #E1E4E8',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-        }}
-      >
-        {/* Avatar */}
-        <div
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '600',
-            fontSize: '16px',
-            flexShrink: 0,
-            backgroundColor: '#E9EEFF',
-            color: '#2D5BFF',
-          }}
-        >
-          🤖
-        </div>
-
-        {/* Chat Title */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: '600',
-              fontSize: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#2C3E50',
-            }}
-          >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              AI Module Federation Assistant
-            </span>
-          </div>
-        </div>
-      </div>
-
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f7f7f8' }}>
       {/* Module Selector */}
       {(modules.length > 0 || onGetSummary || onRefreshStates) && (
         <div
           style={{
-            padding: '8px 20px',
-            borderBottom: '1px solid #E1E4E8',
+            padding: '12px 16px',
+            borderBottom: '1px solid #e5e5e6',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             flexWrap: 'wrap',
-            backgroundColor: '#F5F7FA',
+            backgroundColor: 'white',
           }}
         >
           {modules.length > 0 && onModuleChange && (
             <>
               <label
                 htmlFor='module-select'
-                style={{ fontSize: '12px', fontWeight: '500', color: '#2C3E50' }}
+                style={{ fontSize: '13px', fontWeight: '500', color: '#353740' }}
               >
                 Filter by Module:
               </label>
@@ -183,13 +128,14 @@ export const ChatWindow: FC<ChatWindowProps> = ({
                 value={selectedModule}
                 onChange={e => onModuleChange(e.target.value)}
                 style={{
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  border: '1px solid #E1E4E8',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  border: '1px solid #e5e5e6',
                   backgroundColor: 'white',
-                  color: '#2C3E50',
+                  color: '#353740',
                   minWidth: '150px',
+                  cursor: 'pointer',
                 }}
               >
                 <option value=''>All Modules</option>
@@ -209,11 +155,11 @@ export const ChatWindow: FC<ChatWindowProps> = ({
               onClick={onGetSummary}
               disabled={loading}
               style={{
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '12px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '13px',
                 fontWeight: '500',
-                backgroundColor: '#27AE60',
+                backgroundColor: '#19c37d',
                 color: 'white',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
@@ -228,11 +174,11 @@ export const ChatWindow: FC<ChatWindowProps> = ({
             <button
               onClick={onRefreshStates}
               style={{
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '12px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '13px',
                 fontWeight: '500',
-                backgroundColor: '#2196F3',
+                backgroundColor: '#ab68ff',
                 color: 'white',
                 border: 'none',
                 cursor: 'pointer',
@@ -250,11 +196,9 @@ export const ChatWindow: FC<ChatWindowProps> = ({
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '12px 20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
-          backgroundColor: 'white',
+          backgroundColor: '#f7f7f8',
           animation: 'fadeIn 0.3s ease',
         }}
       >
@@ -303,17 +247,17 @@ export const ChatWindow: FC<ChatWindowProps> = ({
               justifyContent: 'center',
               textAlign: 'center',
               padding: '20px',
+              maxWidth: '768px',
+              margin: '0 auto',
+              width: '100%',
             }}
           >
-            <div style={{ fontSize: '48px', marginBottom: '16px', color: '#d0d0d0' }}>💬</div>
-            <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '10px', color: '#2C3E50' }}>
-              No messages yet
+            <div style={{ fontSize: '32px', marginBottom: '16px', color: '#8e8ea0' }}>🤖</div>
+            <div style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#353740' }}>
+              How can I help you today?
             </div>
-            <div style={{ fontSize: '14px', maxWidth: '320px', margin: '0 auto', color: '#6C7A89' }}>
-              Start a conversation with the AI assistant about your module federation architecture.
-            </div>
-            <div style={{ fontSize: '12px', marginTop: '8px', color: '#6C7A89' }}>
-              Ask questions like: "What is the status of module X?" or "Summarize all module states"
+            <div style={{ fontSize: '14px', maxWidth: '500px', margin: '0 auto', color: '#6e6e80', lineHeight: '1.5' }}>
+              Ask me about module states, get summaries, or analyze your module federation architecture.
             </div>
           </div>
         )}
@@ -330,7 +274,34 @@ export const ChatWindow: FC<ChatWindowProps> = ({
         )}
 
         {loading && messages.length > 0 && (
-          <div style={{ textAlign: 'center', fontSize: '14px', color: '#6C7A89' }}>AI is thinking...</div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              maxWidth: '768px',
+              width: '100%',
+              padding: '16px',
+              margin: '0 auto',
+            }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#19c37d',
+                color: 'white',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>🤖</span>
+            </div>
+            <div style={{ fontSize: '16px', color: '#6e6e80' }}>Thinking...</div>
+          </div>
         )}
 
         <div ref={messagesEndRef} />
@@ -339,49 +310,54 @@ export const ChatWindow: FC<ChatWindowProps> = ({
       {/* Message Input Box */}
       <footer
         style={{
-          padding: '12px 20px',
-          borderTop: '1px solid #E1E4E8',
+          padding: '12px 0',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          justifyContent: 'center',
+          backgroundColor: '#f7f7f8',
         }}
       >
         <form
           onSubmit={handleSend}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: '8px',
+            maxWidth: '768px',
+            width: '100%',
+            padding: '0 16px',
+          }}
         >
           {/* Emoji Picker Button */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', marginBottom: '8px' }}>
             <button
               type='button'
               data-emoji-button='true'
               onClick={() => setIsEmojiPickerOpen(prev => !prev)}
               disabled={loading}
               style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                backgroundColor: '#F5F7FA',
-                color: '#6C7A89',
+                backgroundColor: 'transparent',
+                color: '#6e6e80',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.5 : 1,
-                transition: 'all 0.3s',
+                transition: 'all 0.2s',
               }}
               onMouseEnter={e => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = '#E9EEFF';
-                  e.currentTarget.style.color = '#2D5BFF';
+                  e.currentTarget.style.backgroundColor = '#e5e5e6';
                 }
               }}
               onMouseLeave={e => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = '#F5F7FA';
-                  e.currentTarget.style.color = '#6C7A89';
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }
               }}
               title='Add emoji'
@@ -443,34 +419,47 @@ export const ChatWindow: FC<ChatWindowProps> = ({
           </div>
 
           {/* Message Input */}
-          <div style={{ flex: 1, position: 'relative' }}>
-            <input
-              type='text'
+          <div
+            style={{
+              flex: 1,
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'white',
+              border: '1px solid #e5e5e6',
+              borderRadius: '24px',
+              padding: '12px 16px',
+              minHeight: '52px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            }}
+          >
+            <textarea
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder='Ask about module states...'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder='Message AI Assistant...'
               disabled={loading}
-              ref={inputRef}
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              rows={1}
               style={{
                 width: '100%',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: '1px solid #E1E4E8',
-                fontSize: '14px',
-                height: '40px',
-                minWidth: 0,
-                opacity: loading ? 0.5 : 1,
-                transition: 'all 0.3s',
+                border: 'none',
+                fontSize: '16px',
+                lineHeight: '1.5',
+                minHeight: '24px',
+                maxHeight: '200px',
+                resize: 'none',
                 outline: 'none',
-              }}
-              onFocus={e => {
-                e.target.style.borderColor = '#2D5BFF';
-                e.target.style.boxShadow = '0 0 0 2px #E9EEFF';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = '#E1E4E8';
-                e.target.style.boxShadow = 'none';
+                backgroundColor: 'transparent',
+                color: '#353740',
+                fontFamily: 'inherit',
+                opacity: loading ? 0.5 : 1,
+                overflow: 'auto',
               }}
             />
           </div>
@@ -480,40 +469,44 @@ export const ChatWindow: FC<ChatWindowProps> = ({
             type='submit'
             disabled={!input.trim() || loading}
             style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
               flexShrink: 0,
               border: 'none',
-              backgroundColor: '#2D5BFF',
-              color: 'white',
-              opacity: !input.trim() || loading ? 0.7 : 1,
-              transition: 'all 0.3s',
+              backgroundColor: !input.trim() || loading ? 'transparent' : '#19c37d',
+              color: !input.trim() || loading ? '#6e6e80' : 'white',
+              marginBottom: '8px',
+              transition: 'all 0.2s',
             }}
             onMouseEnter={e => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#1a46e0';
-                e.currentTarget.style.transform = 'scale(1.05)';
+              if (!e.currentTarget.disabled && input.trim()) {
+                e.currentTarget.style.backgroundColor = '#15a169';
               }
             }}
             onMouseLeave={e => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#2D5BFF';
-                e.currentTarget.style.transform = 'scale(1)';
+              if (!e.currentTarget.disabled && input.trim()) {
+                e.currentTarget.style.backgroundColor = '#19c37d';
               }
             }}
             aria-label='Send Message'
           >
-            <span
-              className='material-icons'
-              style={{ fontSize: '18px' }}
+            <svg
+              width='16'
+              height='16'
+              viewBox='0 0 16 16'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
             >
-              send
-            </span>
+              <path
+                d='M.5 1.163L1.31.5 15.5 8 1.31 15.5.5 14.837 13.689 8z'
+                fill='currentColor'
+              />
+            </svg>
           </button>
         </form>
       </footer>

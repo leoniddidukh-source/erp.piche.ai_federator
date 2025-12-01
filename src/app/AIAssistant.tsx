@@ -1,8 +1,10 @@
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChatWindow } from './components/ChatWindow';
-import { firebaseService } from './services/firebaseService';
+import { type FilterState } from './components/DashboardFilters';
+import { LogsVisualization } from './components/LogsVisualization';
+import { firebaseService, type ModuleLog } from './services/firebaseService';
 import { type ChatMessage as GeminiChatMessage, geminiService } from './services/geminiService';
 
 interface ChatMessage {
@@ -28,11 +30,59 @@ export const AIAssistant: FC<Props> = () => {
   const [modules, setModules] = useState<string[]>([]);
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [moduleStates, setModuleStates] = useState<Record<string, ModuleState>>({});
+  const [showVisualization, setShowVisualization] = useState(false);
+  const [logs, setLogs] = useState<ModuleLog[]>([]);
+  const [filters, setFilters] = useState<FilterState>({});
+  const [visualizationHeight, setVisualizationHeight] = useState(400);
+  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     fetchModules();
     fetchAllModuleStates();
   }, []);
+
+  // Handle resizing
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const containerHeight = window.innerHeight;
+      const newHeight = containerHeight - e.clientY;
+      const minHeight = 200;
+      const maxHeight = containerHeight - 200; // Leave space for chat
+
+      if (newHeight >= minHeight && newHeight <= maxHeight) {
+        setVisualizationHeight(newHeight);
+      }
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleMouseUp, { passive: false });
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.body.style.overflow = '';
+    };
+  }, [isResizing]);
 
   const fetchModules = async () => {
     try {
@@ -45,9 +95,10 @@ export const AIAssistant: FC<Props> = () => {
 
   const fetchAllModuleStates = async () => {
     try {
-      const logs = await firebaseService.getModuleLogs();
+      const fetchedLogs = await firebaseService.getModuleLogs();
+      setLogs(fetchedLogs);
       const states: Record<string, ModuleState> = {};
-      logs.forEach(log => {
+      fetchedLogs.forEach(log => {
         if (log.moduleName) {
           states[log.moduleName] = {
             moduleName: log.moduleName,
@@ -134,43 +185,132 @@ export const AIAssistant: FC<Props> = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f7f7f8' }}>
       {/* Module States Overview */}
       {Object.keys(moduleStates).length > 0 && (
         <div
           style={{
-            padding: '15px',
-            backgroundColor: '#f5f5f5',
-            borderBottom: '1px solid #E1E4E8',
+            padding: '12px 16px',
+            backgroundColor: 'white',
+            borderBottom: '1px solid #e5e5e6',
             maxHeight: '150px',
             overflowY: 'auto',
           }}
         >
-          <h3 style={{ marginTop: 0, marginBottom: '10px', fontSize: '14px', fontWeight: 'bold' }}>
-            Module States Overview
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: '14px', fontWeight: '600', color: '#353740' }}>
+              Module States Overview
+            </h3>
+            <button
+              onClick={() => setShowVisualization(!showVisualization)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '500',
+                backgroundColor: showVisualization ? '#19c37d' : '#e5e5e6',
+                color: showVisualization ? 'white' : '#353740',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
+              {showVisualization ? '📊 Hide Charts' : '📊 Show Charts'}
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '8px' }}>
             {Object.values(moduleStates).map(state => (
               <div
                 key={state.moduleName}
                 style={{
-                  padding: '10px',
-                  backgroundColor: 'white',
-                  borderRadius: '4px',
-                  border: '1px solid #ddd',
+                  padding: '12px',
+                  backgroundColor: '#f7f7f8',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e5e6',
                 }}
               >
-                <strong style={{ fontSize: '12px' }}>{state.moduleName}</strong>
-                <div style={{ fontSize: '11px', color: '#666', marginTop: '5px' }}>
+                <strong style={{ fontSize: '13px', color: '#353740' }}>{state.moduleName}</strong>
+                <div style={{ fontSize: '12px', color: '#6e6e80', marginTop: '4px' }}>
                   {new Date(state.timestamp).toLocaleString()}
                 </div>
                 {state.stateDescription && (
-                  <div style={{ fontSize: '11px', marginTop: '5px' }}>{state.stateDescription}</div>
+                  <div style={{ fontSize: '12px', marginTop: '4px', color: '#6e6e80' }}>{state.stateDescription}</div>
                 )}
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {/* Visualization Panel */}
+      {showVisualization && (
+        <>
+          <div
+            style={{
+              height: `${visualizationHeight}px`,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              backgroundColor: '#f7f7f8',
+              position: 'relative',
+            }}
+          >
+            <LogsVisualization
+              logs={logs}
+              modules={modules}
+              selectedModule={selectedModule}
+              onModuleChange={setSelectedModule}
+              filters={filters}
+              onFiltersChange={setFilters}
+            />
+          </div>
+          {/* Resize Handle */}
+          <div
+            ref={resizeRef}
+            onMouseDown={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsResizing(true);
+            }}
+            style={{
+              height: '8px',
+              backgroundColor: isResizing ? '#19c37d' : '#e5e5e6',
+              cursor: 'row-resize',
+              position: 'relative',
+              transition: isResizing ? 'none' : 'background-color 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+              touchAction: 'none',
+            }}
+            onMouseEnter={e => {
+              if (!isResizing) {
+                e.currentTarget.style.backgroundColor = '#d1d1d1';
+              }
+            }}
+            onMouseLeave={e => {
+              if (!isResizing) {
+                e.currentTarget.style.backgroundColor = '#e5e5e6';
+              }
+            }}
+          >
+            <div
+              style={{
+                width: '40px',
+                height: '4px',
+                backgroundColor: isResizing ? '#15a169' : '#c5c5c7',
+                borderRadius: '2px',
+                transition: isResizing ? 'none' : 'background-color 0.2s',
+              }}
+            />
+          </div>
+        </>
       )}
 
       {/* Chat Window */}

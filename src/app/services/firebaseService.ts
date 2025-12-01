@@ -1,13 +1,5 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import {
-  collection,
-  getDocs,
-  getFirestore,
-  orderBy,
-  query,
-  Timestamp,
-  where,
-} from 'firebase/firestore';
+import { collection, getDocs, getFirestore, orderBy, query, Timestamp, where } from 'firebase/firestore';
 
 export interface ModuleLog {
   timestamp: string;
@@ -31,8 +23,7 @@ class FirebaseService {
   private logCollectionName: string;
 
   constructor() {
-    this.logCollectionName =
-      import.meta.env.REACT_APP_LOG_COLLECTION || 'modules_ai_reports';
+    this.logCollectionName = import.meta.env.REACT_APP_LOG_COLLECTION || 'modules_ai_reports';
     this.initializeFirebase();
   }
 
@@ -82,25 +73,32 @@ class FirebaseService {
 
     try {
       const logsCollection = collection(this.db, this.logCollectionName);
-      const queryConstraints: Array<ReturnType<typeof where> | ReturnType<typeof orderBy>> = [
-        orderBy('timestamp', 'desc'),
-      ];
+      let querySnapshot;
 
-      // Apply filters
-      if (moduleName) {
-        queryConstraints.push(where('moduleName', '==', moduleName));
+      // Avoid composite index requirements by fetching and filtering in memory
+      // Only use simple queries that don't require composite indexes
+      if (moduleName && !startDate && !endDate) {
+        // Simple filter by moduleName only (no ordering to avoid index requirement)
+        const logsQuery = query(logsCollection, where('moduleName', '==', moduleName));
+        querySnapshot = await getDocs(logsQuery);
+      } else if (!moduleName && (startDate || endDate)) {
+        // Date filtering only - can use orderBy
+        const queryConstraints: Array<ReturnType<typeof where> | ReturnType<typeof orderBy>> = [
+          orderBy('timestamp', 'desc'),
+        ];
+        if (startDate) {
+          queryConstraints.push(where('timestamp', '>=', Timestamp.fromDate(startDate)));
+        }
+        if (endDate) {
+          queryConstraints.push(where('timestamp', '<=', Timestamp.fromDate(endDate)));
+        }
+        const logsQuery = query(logsCollection, ...queryConstraints);
+        querySnapshot = await getDocs(logsQuery);
+      } else {
+        // Complex case: fetch all and filter/sort in memory to avoid index requirements
+        querySnapshot = await getDocs(logsCollection);
       }
 
-      if (startDate) {
-        queryConstraints.push(where('timestamp', '>=', Timestamp.fromDate(startDate)));
-      }
-
-      if (endDate) {
-        queryConstraints.push(where('timestamp', '<=', Timestamp.fromDate(endDate)));
-      }
-
-      const logsQuery = query(logsCollection, ...queryConstraints);
-      const querySnapshot = await getDocs(logsQuery);
       const logs: ModuleLog[] = [];
 
       querySnapshot.forEach(doc => {
@@ -122,14 +120,25 @@ class FirebaseService {
         logs.push(log);
       });
 
-      // Additional date filtering in case Firestore query doesn't handle it properly
-      const filteredLogs = logs.filter(log => {
+      // Filter and sort in memory to avoid Firestore index requirements
+      let filteredLogs = logs;
+
+      // Filter by moduleName if specified
+      if (moduleName) {
+        filteredLogs = filteredLogs.filter(log => log.moduleName === moduleName);
+      }
+
+      // Filter by date range
+      filteredLogs = filteredLogs.filter(log => {
         const logDate = new Date(log.timestamp);
         if (startDate && logDate < startDate) return false;
         if (endDate && logDate > endDate) return false;
 
         return true;
       });
+
+      // Sort by timestamp (newest first)
+      filteredLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       return filteredLogs;
     } catch (error) {

@@ -72,24 +72,28 @@ class FirebaseService {
     }
 
     try {
-      let logsQuery = this.db
-        .collection(this.logCollectionName)
-        .orderBy('timestamp', 'desc');
+      let querySnapshot;
 
-      // Apply filters - build query step by step
-      if (moduleName) {
-        logsQuery = logsQuery.where('moduleName', '==', moduleName);
+      // Avoid composite index requirements by fetching and filtering in memory
+      // Only use simple queries that don't require composite indexes
+      if (moduleName && !startDate && !endDate) {
+        // Simple filter by moduleName only (no ordering to avoid index requirement)
+        querySnapshot = await this.db.collection(this.logCollectionName).where('moduleName', '==', moduleName).get();
+      } else if (!moduleName && (startDate || endDate)) {
+        // Date filtering only - can use orderBy
+        let logsQuery = this.db.collection(this.logCollectionName).orderBy('timestamp', 'desc');
+        if (startDate) {
+          logsQuery = logsQuery.where('timestamp', '>=', Timestamp.fromDate(startDate));
+        }
+        if (endDate) {
+          logsQuery = logsQuery.where('timestamp', '<=', Timestamp.fromDate(endDate));
+        }
+        querySnapshot = await logsQuery.get();
+      } else {
+        // Complex case: fetch all and filter/sort in memory to avoid index requirements
+        querySnapshot = await this.db.collection(this.logCollectionName).get();
       }
 
-      if (startDate) {
-        logsQuery = logsQuery.where('timestamp', '>=', Timestamp.fromDate(startDate));
-      }
-
-      if (endDate) {
-        logsQuery = logsQuery.where('timestamp', '<=', Timestamp.fromDate(endDate));
-      }
-
-      const querySnapshot = await logsQuery.get();
       const logs: ModuleLog[] = [];
 
       querySnapshot.forEach(doc => {
@@ -111,14 +115,25 @@ class FirebaseService {
         logs.push(log);
       });
 
-      // Additional date filtering in case Firestore query doesn't handle it properly
-      const filteredLogs = logs.filter(log => {
+      // Filter and sort in memory to avoid Firestore index requirements
+      let filteredLogs = logs;
+
+      // Filter by moduleName if specified
+      if (moduleName) {
+        filteredLogs = filteredLogs.filter(log => log.moduleName === moduleName);
+      }
+
+      // Filter by date range
+      filteredLogs = filteredLogs.filter(log => {
         const logDate = new Date(log.timestamp);
         if (startDate && logDate < startDate) return false;
         if (endDate && logDate > endDate) return false;
 
         return true;
       });
+
+      // Sort by timestamp (newest first)
+      filteredLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       return filteredLogs;
     } catch (error) {

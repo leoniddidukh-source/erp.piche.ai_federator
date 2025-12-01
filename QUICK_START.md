@@ -54,7 +54,7 @@ The application will run on `http://localhost:5173` (or the next available port)
 ✅ **Module Monitoring** - View real-time module states  
 ✅ **Firebase Integration** - Reads logs from Firebase Storage (client-side)  
 ✅ **Module Filtering** - Filter by specific modules  
-✅ **State Summarization** - Get AI-generated summaries  
+✅ **State Summarization** - Get AI-generated summaries
 
 ## Firebase Storage Structure
 

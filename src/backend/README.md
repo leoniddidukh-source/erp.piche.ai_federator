@@ -54,6 +54,7 @@ PORT=3001
 ### 5. Firebase Storage Structure
 
 Ensure your Firebase Storage has logs organized as:
+
 ```
 logs/
   ├── module-name-1/
@@ -64,6 +65,7 @@ logs/
 ```
 
 Each log file should contain JSON with:
+
 ```json
 {
   "timestamp": "2024-01-01T00:00:00Z",
@@ -156,7 +158,7 @@ The frontend component `AIAssistant` can be used in your React app:
 ```tsx
 import { AIAssistant } from './app/AIAssistant';
 
-<AIAssistant apiUrl="http://localhost:3001" />
+<AIAssistant apiUrl='http://localhost:3001' />;
 ```
 
 ## Troubleshooting
@@ -178,4 +180,3 @@ import { AIAssistant } from './app/AIAssistant';
 - Verify Firebase Storage bucket name is correct
 - Check that logs are stored in the `logs/` prefix
 - Ensure log files are in valid JSON format
-

@@ -56,7 +56,8 @@ GEMINI_API_KEY=your-gemini-api-key
 PORT=3001
 ```
 
-**Important**: 
+**Important**:
+
 - The `FIREBASE_PRIVATE_KEY` must include the `\n` characters for newlines
 - Wrap the private key in quotes if it contains special characters
 
@@ -104,11 +105,13 @@ pnpm run start:backend
 ## Step 7: Test the Backend
 
 1. Check health endpoint:
+
    ```bash
    curl http://localhost:3001/health
    ```
 
 2. Get available modules:
+
    ```bash
    curl http://localhost:3001/api/v1/module-state/modules/list
    ```
@@ -127,7 +130,7 @@ The AI Assistant component is already integrated into `PicheReactAppTemplate`. Y
 ```tsx
 import { AIAssistant } from './app/AIAssistant';
 
-<AIAssistant apiUrl="http://localhost:3001" />
+<AIAssistant apiUrl='http://localhost:3001' />;
 ```
 
 ## Troubleshooting
@@ -158,4 +161,3 @@ Change the `PORT` in your `.env` file to a different port.
 ## API Documentation
 
 See `src/backend/README.md` for detailed API documentation.
-
