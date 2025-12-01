@@ -7,11 +7,28 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import VitePluginHtmlEnv from 'vite-plugin-html-env';
 
 export default ({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, process.cwd(), ['VITE_', 'REACT_APP_']);
+
+  // Build object with REACT_APP_ variables for import.meta.env
+  const reactAppEnv: Record<string, string> = {};
+  Object.keys(env).forEach(key => {
+    if (key.startsWith('REACT_APP_')) {
+      reactAppEnv[key] = env[key];
+    }
+  });
 
   return defineConfig({
     define: {
       'process.env': '"' + env.VITE_ENV + '"',
+      // Expose REACT_APP_ prefixed environment variables to import.meta.env
+      ...Object.keys(reactAppEnv).reduce(
+        (acc, key) => {
+          acc[`import.meta.env.${key}`] = JSON.stringify(env[key]);
+
+          return acc;
+        },
+        {} as Record<string, string>
+      ),
     },
 
     plugins: [

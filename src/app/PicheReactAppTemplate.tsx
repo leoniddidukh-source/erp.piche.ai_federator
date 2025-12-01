@@ -1,15 +1,12 @@
-import { PuiTheme } from 'piche.ui';
 import type { FC } from 'react';
+
+import { AIAssistant } from './AIAssistant';
 
 interface Props {
   value?: string;
+  apiUrl?: string;
 }
 
-export const PicheReactAppTemplate: FC<Props> = ({ value }) => {
-  return (
-    <PuiTheme>
-      <h1>Piche React App Template</h1>
-      <h3>Value is: {value}</h3>
-    </PuiTheme>
-  );
+export const PicheReactAppTemplate: FC<Props> = ({ apiUrl }) => {
+  return <AIAssistant apiUrl={apiUrl} />;
 };
