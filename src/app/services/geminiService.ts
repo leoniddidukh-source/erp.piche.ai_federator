@@ -161,6 +161,69 @@ Response:`;
       throw error;
     }
   }
+
+  /**
+   * Generate chart configuration from user prompt
+   */
+  async generateChartConfig(prompt: string, moduleLogs: ModuleLog[]): Promise<ChartConfig> {
+    if (!this.model) {
+      throw new Error('Gemini API not initialized');
+    }
+
+    try {
+      const logsContext = this.formatLogsForContext(moduleLogs);
+
+      const chartPrompt = `You are a chart configuration generator. Based on the user's prompt and the available module logs, generate a chart configuration in JSON format.
+
+Available module logs:
+${logsContext}
+
+User prompt: ${prompt}
+
+Generate a JSON configuration for a chart. The configuration should have this structure:
+{
+  "type": "bar" | "line" | "area" | "pie" | "histogram",
+  "title": "Chart title",
+  "dataKey": "key name for data extraction",
+  "xAxisKey": "key for x-axis",
+  "yAxisKey": "key for y-axis",
+  "description": "Brief description of what the chart shows"
+}
+
+For histogram type, use "histogram" and specify the dataKey to group by.
+For bar/line/area charts, specify both xAxisKey and yAxisKey.
+For pie charts, specify dataKey for the value and xAxisKey for labels.
+
+Analyze the logs and create appropriate data aggregation. Return ONLY valid JSON, no additional text.`;
+
+      const result = await this.model.generateContent(chartPrompt);
+      const response = await result.response;
+      const text = response.text();
+
+      // Try to extract JSON from the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const config = JSON.parse(jsonMatch[0]) as ChartConfig;
+
+        return config;
+      }
+
+      throw new Error('Failed to parse chart configuration from AI response');
+    } catch (error) {
+      console.error('Error generating chart config:', error);
+
+      throw error;
+    }
+  }
+}
+
+export interface ChartConfig {
+  type: 'bar' | 'line' | 'area' | 'pie' | 'histogram';
+  title: string;
+  dataKey?: string;
+  xAxisKey?: string;
+  yAxisKey?: string;
+  description?: string;
 }
 
 export const geminiService = new GeminiService();

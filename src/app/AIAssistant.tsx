@@ -5,7 +5,7 @@ import { ChatWindow } from './components/ChatWindow';
 import { type FilterState } from './components/DashboardFilters';
 import { LogsVisualization } from './components/LogsVisualization';
 import { firebaseService, type ModuleLog } from './services/firebaseService';
-import { type ChatMessage as GeminiChatMessage, geminiService } from './services/geminiService';
+import { type ChatMessage as GeminiChatMessage, geminiService, type ChartConfig } from './services/geminiService';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -35,6 +35,7 @@ export const AIAssistant: FC<Props> = () => {
   const [filters, setFilters] = useState<FilterState>({});
   const [visualizationHeight, setVisualizationHeight] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
+  const [customCharts, setCustomCharts] = useState<ChartConfig[]>([]);
 
   useEffect(() => {
     fetchModules();
@@ -267,6 +268,19 @@ export const AIAssistant: FC<Props> = () => {
               onModuleChange={setSelectedModule}
               filters={filters}
               onFiltersChange={setFilters}
+              customCharts={customCharts}
+              onAddChart={async (prompt: string) => {
+                try {
+                  const config = await geminiService.generateChartConfig(prompt, logs);
+                  setCustomCharts(prev => [...prev, config]);
+                } catch (error) {
+                  console.error('Error creating chart:', error);
+                  alert('Failed to create chart. Please try again.');
+                }
+              }}
+              onDeleteChart={(index: number) => {
+                setCustomCharts(prev => prev.filter((_chart, i) => i !== index));
+              }}
             />
           </div>
           {/* Resize Handle */}

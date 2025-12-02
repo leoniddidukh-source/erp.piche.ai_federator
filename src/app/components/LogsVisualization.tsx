@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -15,6 +15,10 @@ import {
 } from 'recharts';
 
 import type { ModuleLog } from '../services/firebaseService';
+import type { ChartConfig } from '../services/geminiService';
+
+import { CustomChart } from './CustomChart';
+import { CreateChartModal } from './CreateChartModal';
 import { DashboardFilters, type FilterState } from './DashboardFilters';
 
 interface LogsVisualizationProps {
@@ -24,6 +28,9 @@ interface LogsVisualizationProps {
   onModuleChange?: (module: string) => void;
   filters?: FilterState;
   onFiltersChange?: (filters: FilterState) => void;
+  customCharts?: ChartConfig[];
+  onAddChart?: (prompt: string) => Promise<void>;
+  onDeleteChart?: (index: number) => void;
 }
 
 export const LogsVisualization: FC<LogsVisualizationProps> = ({
@@ -33,7 +40,12 @@ export const LogsVisualization: FC<LogsVisualizationProps> = ({
   onModuleChange,
   filters = {},
   onFiltersChange,
+  customCharts = [],
+  onAddChart,
+  onDeleteChart,
 }) => {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreatingChart, setIsCreatingChart] = useState(false);
   // Extract available statuses and users from logs
   const availableStatuses = useMemo(() => {
     const statusSet = new Set<string>();
@@ -282,6 +294,65 @@ export const LogsVisualization: FC<LogsVisualizationProps> = ({
         </div>
       )}
 
+      {/* Custom Charts */}
+      {customCharts.length > 0 && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+            gap: '20px',
+            marginBottom: '20px',
+          }}
+        >
+          {customCharts.map((chart, index) => (
+            <CustomChart
+              key={index}
+              config={chart}
+              logs={filteredLogs}
+              onDelete={onDeleteChart ? () => onDeleteChart(index) : undefined}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add Chart Button */}
+      {onAddChart && (
+        <div
+          style={{
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              backgroundColor: '#19c37d',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#15a169';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#19c37d';
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>+</span>
+            Add Chart
+          </button>
+        </div>
+      )}
+
       <div
         style={{
           display: 'grid',
@@ -521,6 +592,26 @@ export const LogsVisualization: FC<LogsVisualizationProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Create Chart Modal */}
+      {onAddChart && (
+        <CreateChartModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreateChart={async (prompt: string) => {
+            setIsCreatingChart(true);
+            try {
+              await onAddChart(prompt);
+              setIsCreateModalOpen(false);
+            } catch (error) {
+              console.error('Error creating chart:', error);
+            } finally {
+              setIsCreatingChart(false);
+            }
+          }}
+          loading={isCreatingChart}
+        />
+      )}
     </div>
   );
 };
