@@ -16,9 +16,8 @@ import {
 
 import type { ModuleLog } from '../services/firebaseService';
 import type { ChartConfig } from '../services/geminiService';
-
-import { CustomChart } from './CustomChart';
 import { CreateChartModal } from './CreateChartModal';
+import { CustomChart } from './CustomChart';
 import { DashboardFilters, type FilterState } from './DashboardFilters';
 
 interface LogsVisualizationProps {

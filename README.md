@@ -16,13 +16,13 @@
 
 1.  Replace all `react-app-template` and `PicheReactAppTemplate` mentions with an appropriate new application name. Files that need change:
 
-- vite.config.ts,
+- webpack.config.js,
 
 - package.json,
 
-- index.html,
+- public/index.html,
 
-- App.tsx,
+- src/App.tsx,
 
 - app & local folders and .tsx .ts files,
 

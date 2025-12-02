@@ -7,9 +7,9 @@ import ReactDOM from 'react-dom/client';
 import { App } from './App';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const idUrl = import.meta.env.VITE_LOGIN_URL as string;
-  const apiUrl = import.meta.env.VITE_API_URL as string;
-  const operationUrl = import.meta.env.VITE_API_OPERATION_URL as string;
+  const idUrl = (process.env.VITE_LOGIN_URL || process.env.REACT_APP_LOGIN_URL) as string;
+  const apiUrl = (process.env.VITE_API_URL || process.env.REACT_APP_API_URL) as string;
+  const operationUrl = (process.env.VITE_API_OPERATION_URL || process.env.REACT_APP_API_OPERATION_URL) as string;
 
   const appConfig = new AppConfig({ apiUrl });
   appConfig.subscribe();

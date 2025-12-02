@@ -149,5 +149,3 @@ export const CreateChartModal: FC<CreateChartModalProps> = ({ isOpen, onClose, o
     </div>
   );
 };
-
-

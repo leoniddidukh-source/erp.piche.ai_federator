@@ -312,5 +312,3 @@ export const CustomChart: FC<CustomChartProps> = ({ config, logs, onDelete }) =>
     </div>
   );
 };
-
-

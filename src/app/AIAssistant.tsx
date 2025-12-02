@@ -5,7 +5,7 @@ import { ChatWindow } from './components/ChatWindow';
 import { type FilterState } from './components/DashboardFilters';
 import { LogsVisualization } from './components/LogsVisualization';
 import { firebaseService, type ModuleLog } from './services/firebaseService';
-import { type ChatMessage as GeminiChatMessage, geminiService, type ChartConfig } from './services/geminiService';
+import { type ChartConfig, type ChatMessage as GeminiChatMessage, geminiService } from './services/geminiService';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
